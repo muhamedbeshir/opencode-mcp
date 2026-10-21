@@ -1,0 +1,16 @@
+{
+  "name": "opencode-mcp",
+  "version": "0.1.0",
+  "description": "A dependency-free MCP server that lets any MCP client drive OpenCode sessions in authorized project directories.",
+  "type": "module",
+  "private": true,
+  "bin": { "opencode-mcp": "bin/opencode-mcp.mjs" },
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node bin/opencode-mcp.mjs",
+    "http": "node bin/opencode-mcp.mjs http",
+    "setup": "node bin/opencode-mcp.mjs setup",
+    "test": "node --test test/unit.test.mjs",
+    "test:live": "node --test test/live.test.mjs"
+  }
+}
