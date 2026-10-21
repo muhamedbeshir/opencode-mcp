@@ -23,7 +23,9 @@ async function main() {
   switch (command) {
     case "stdio": {
       const runtime = createRuntime(config);
-      await serveStdio(createMcpServer({ runtime, config }));
+      const server = createMcpServer({ runtime, config });
+      await serveStdio(server);
+      server.stop();
       return runtime.stop();
     }
     case "http": {

@@ -16,11 +16,21 @@ function addQuery(url, query = {}) {
 }
 
 export function createClient({ getServer }) {
+  const basic = (password) => `Basic ${Buffer.from(`opencode:${password}`).toString("base64")}`;
+
+  /** Opens a server-sent event stream and returns the raw response; the caller reads `res.body` and aborts via `signal`. */
+  async function stream(path, { signal } = {}) {
+    const { url: base, password } = await getServer();
+    const res = await fetch(new URL(path, base), { headers: { authorization: basic(password), accept: "text/event-stream" }, signal });
+    if (!res.ok || !res.body) throw new OpenCodeError(res.status, `OpenCode answered ${res.status} for GET ${path}`);
+    return res;
+  }
+
   async function call(method, path, { query, body, signal } = {}) {
     const { url: base, password } = await getServer();
     const url = new URL(path, base);
     addQuery(url, query);
-    const headers = { authorization: `Basic ${Buffer.from(`opencode:${password}`).toString("base64")}` };
+    const headers = { authorization: basic(password) };
     if (body !== undefined) headers["content-type"] = "application/json";
     const res = await fetch(url, { method, headers, body: body === undefined ? undefined : JSON.stringify(body), signal });
     const text = await res.text();
@@ -30,6 +40,7 @@ export function createClient({ getServer }) {
   const at = (directory) => (directory ? { location: { directory } } : {});
   return {
     call,
+    stream,
     info: () => call("GET", "/api/info"),
     listSessions: (query) => call("GET", "/api/session", { query }),
     getSession: (id) => call("GET", `/api/session/${encodeURIComponent(id)}`),

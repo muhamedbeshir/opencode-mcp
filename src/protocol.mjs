@@ -1,5 +1,7 @@
 import { createClient } from "./client.mjs";
+import { createEventHub } from "./events.mjs";
 import { makePolicy } from "./policy.mjs";
+import { createViewer } from "./viewer.mjs";
 import { manageTools } from "./tools-manage.mjs";
 import { sessionTools } from "./tools-session.mjs";
 
@@ -15,7 +17,9 @@ const rpcError = (id, code, message) => ({ jsonrpc: "2.0", id: id ?? null, error
 export function createMcpServer({ runtime, config }) {
   const client = createClient({ getServer: runtime.getServer });
   const policy = makePolicy(config.allowedDirs);
-  const ctx = { client, policy, config };
+  const hub = createEventHub(client);
+  const viewer = createViewer({ hub, client, policy, config });
+  const ctx = { client, policy, config, hub, viewer };
   const status = {
     name: "opencode_status",
     description: "Check that OpenCode is reachable and show which project directories this server may use.",
@@ -23,7 +27,7 @@ export function createMcpServer({ runtime, config }) {
     readOnly: true,
     async handler() {
       const info = await client.info();
-      return { opencodeVersion: info.version, server: runtime.isPrivate ? "private (started by this MCP server, loopback only)" : "external", authorizedDirectories: policy.roots };
+      return { opencodeVersion: info.version, liveView: await viewer.indexUrl(), server: runtime.isPrivate ? "private (started by this MCP server, loopback only)" : "external", authorizedDirectories: policy.roots };
     },
   };
   const tools = [status, ...sessionTools(ctx), ...manageTools(ctx)];
@@ -66,5 +70,5 @@ export function createMcpServer({ runtime, config }) {
     return replies.length ? replies : null;
   }
 
-  return { handle: handleAny, tools: listing };
+  return { handle: handleAny, tools: listing, stop: () => (hub.stop(), viewer.stop()) };
 }

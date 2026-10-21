@@ -16,14 +16,15 @@ export async function authorize({ client, policy }, sessionId) {
 /** Sends one instruction and, unless told not to, waits for the turn to end. */
 async function send(ctx, info, { text, model, delivery, waitSeconds }) {
   if (model) await ctx.client.switchModel(info.id, parseModel(model));
+  const watch = await ctx.viewer.show(info.id);
   const sent = (await ctx.client.prompt(info.id, { text, ...(delivery ? { delivery } : {}) })).data;
   const since = sent.time.created;
   const seconds = Math.min(waitSeconds ?? 120, ctx.config.maxWaitSeconds);
-  if (seconds <= 0) return { sessionId: info.id, status: "running", note: "Started. Call opencode_result to collect the answer." };
-  const turn = await followTurn(ctx.client, info.id, since, { timeoutMs: seconds * 1000 });
+  if (seconds <= 0) return { sessionId: info.id, status: "running", watchLive: watch, note: "Started. Call opencode_result to collect the answer." };
+  const turn = await followTurn(ctx.client, info.id, since, { timeoutMs: seconds * 1000, hub: ctx.hub });
   const now = summarizeSession((await ctx.client.getSession(info.id)).data);
-  if (!turn.finished) return { sessionId: info.id, status: "running", partialAnswer: turn.answer, tools: turn.tools, note: "Still working. Call opencode_result later." };
-  return { sessionId: info.id, status: turn.outcome, error: turn.error, answer: turn.answer, tools: turn.tools, model: now.model, cost: now.cost };
+  if (!turn.finished) return { sessionId: info.id, status: "running", watchLive: watch, partialAnswer: turn.answer, tools: turn.tools, note: "Still working. Call opencode_result later." };
+  return { sessionId: info.id, status: turn.outcome, error: turn.error, answer: turn.answer, tools: turn.tools, model: now.model, cost: now.cost, watchLive: watch };
 }
 
 export function sessionTools(ctx) {
@@ -73,7 +74,7 @@ export function sessionTools(ctx) {
         const latest = (await client.messages(info.id, { limit: 100, order: "desc" })).data ?? [];
         const lastUser = latest.find((m) => m.type === "user");
         const since = lastUser?.time.created ?? 0;
-        const turn = await followTurn(client, info.id, since, { timeoutMs: Math.min(wait_seconds, ctx.config.maxWaitSeconds) * 1000 });
+        const turn = await followTurn(client, info.id, since, { timeoutMs: Math.min(wait_seconds, ctx.config.maxWaitSeconds) * 1000, hub: ctx.hub });
         return { sessionId: info.id, status: turn.finished ? turn.outcome : "running", error: turn.error, answer: turn.answer, tools: turn.tools, session: summarizeSession(info) };
       },
     },

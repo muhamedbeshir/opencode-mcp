@@ -10,7 +10,7 @@
     "start": "node bin/opencode-mcp.mjs",
     "http": "node bin/opencode-mcp.mjs http",
     "setup": "node bin/opencode-mcp.mjs setup",
-    "test": "node --test test/unit.test.mjs",
+    "test": "node --test test/unit.test.mjs test/stream.test.mjs",
     "test:live": "node --test test/live.test.mjs"
   }
 }
