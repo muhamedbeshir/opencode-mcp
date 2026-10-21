@@ -28,6 +28,20 @@ assistant  --MCP (stdio or HTTP)-->  opencode-mcp  --HTTP, loopback, password-->
 Sessions are stored by OpenCode itself. A session created here shows up in `opencode session list` and can be resumed
 in the terminal with `opencode -s <id>` (verified), and the other way around.
 
+## Watching it work
+
+When an instruction is sent, a live page opens in your browser (once per session) showing the answer being written,
+the tools being used, and the final state. `opencode_send` and `opencode_status` also return the link
+(`watchLive` / `liveView`), and the index page lists your authorized sessions.
+
+- It is read-only and costs the assistant nothing: the page talks to this process, not to the model.
+- It listens on `127.0.0.1` only (port `47601`, or a free one). Every URL contains a random token that exists only
+  while the server runs, the Host header is checked, and sessions outside the authorized folders are not served.
+- Turn the auto-open off with `"openViewer": false` in the settings file or `OPENCODE_MCP_OPEN_VIEWER=0`; the link is
+  still returned.
+- Finishing is detected from OpenCode's event stream, so a reply comes back the moment the turn ends. Waiting happens
+  inside this server, so a long wait uses no model tokens. If the stream drops, it falls back to polling.
+
 ## Install
 
 ```powershell
@@ -107,8 +121,8 @@ OpenCode's own permission rules. Authorize only projects you are happy to hand o
   that process. Do not send to it from here at the same time; wait until it is idle, then continue it here. The server
   works with the sessions' stored history and starts its own private OpenCode, so it does not see a turn in progress
   elsewhere.
-- Progress is polled (0.3 s, then 0.75 s, then 2 s), not streamed. Long work: use a short `wait_seconds` and call
-  `opencode_result` again. `wait_seconds` is capped at 900 by default (`maxWaitSeconds`).
+- Turn completion is streamed (OpenCode events) with polling as a fallback. Long work: use a short `wait_seconds` and
+  call `opencode_result` again. `wait_seconds` is capped at 900 by default (`maxWaitSeconds`).
 - Changing the model mid-session uses OpenCode's `switchModel`; models and variants come from `opencode_list_models`.
 - Models that OpenCode itself rejects (for example free-tier models needing a newer OpenCode) fail with the OpenCode
   error text in the result.
