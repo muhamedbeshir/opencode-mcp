@@ -57,7 +57,7 @@ test("viewer: loopback, secret token in the path, host check, and only authorize
     messages: async () => ({ data: [] }),
     activeSessions: async () => ({ data: {} }),
   };
-  const viewer = createViewer({ hub: { ensure() {}, subscribe: () => () => {} }, client, policy: makePolicy([inside]), config: { viewerPort: 0, openViewer: false } });
+  const viewer = createViewer({ hub: { ensure() {}, subscribe: () => () => {} }, client, policy: makePolicy([inside]), config: { viewerPort: 0, viewer: "off" } });
   const url = new URL(await viewer.urlFor("ses_in"));
   const get = (path, host = url.host) => new Promise((resolve, reject) => {
     request({ host: "127.0.0.1", port: url.port, path, headers: { host } }, (res) => {

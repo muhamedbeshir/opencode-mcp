@@ -1,5 +1,6 @@
 import { createClient } from "./client.mjs";
 import { createEventHub } from "./events.mjs";
+import { findOpenCodeBin } from "./runtime.mjs";
 import { makePolicy } from "./policy.mjs";
 import { createViewer } from "./viewer.mjs";
 import { manageTools } from "./tools-manage.mjs";
@@ -18,7 +19,8 @@ export function createMcpServer({ runtime, config }) {
   const client = createClient({ getServer: runtime.getServer });
   const policy = makePolicy(config.allowedDirs);
   const hub = createEventHub(client);
-  const viewer = createViewer({ hub, client, policy, config });
+  const getBin = () => { try { return findOpenCodeBin(config.bin); } catch { return null; } };
+  const viewer = createViewer({ hub, client, policy, config, getServer: runtime.getServer, getBin });
   const ctx = { client, policy, config, hub, viewer };
   const status = {
     name: "opencode_status",

@@ -30,15 +30,16 @@ in the terminal with `opencode -s <id>` (verified), and the other way around.
 
 ## Watching it work
 
-When an instruction is sent, a live page opens in your browser (once per session) showing the answer being written,
-the tools being used, and the final state. `opencode_send` and `opencode_status` also return the link
-(`watchLive` / `liveView`), and the index page lists your authorized sessions.
+When an instruction is sent, OpenCode's own terminal window opens (once per session, Windows) attached to the same
+session, so you watch it work as if you had started it yourself. Elsewhere, or if the window cannot open, a live web
+page opens in the browser instead. `opencode_send` and `opencode_status` also return the page link
+(`watchLive` / `liveView`).
 
-- It is read-only and costs the assistant nothing: the page talks to this process, not to the model.
+- Choose with `"viewer": "terminal" | "browser" | "off"` in the settings file or `OPENCODE_MCP_VIEWER`. Default: terminal.
+  The server password reaches the window through its environment only.
+- Watching costs the assistant nothing: the window and the page talk to this process, not to the model.
 - It listens on `127.0.0.1` only (port `47601`, or a free one). Every URL contains a random token that exists only
   while the server runs, the Host header is checked, and sessions outside the authorized folders are not served.
-- Turn the auto-open off with `"openViewer": false` in the settings file or `OPENCODE_MCP_OPEN_VIEWER=0`; the link is
-  still returned.
 - Finishing is detected from OpenCode's event stream, so a reply comes back the moment the turn ends. Waiting happens
   inside this server, so a long wait uses no model tokens. If the stream drops, it falls back to polling.
 

@@ -30,9 +30,9 @@ export function loadConfig(env = process.env) {
     httpPort: Number(env.OPENCODE_MCP_HTTP_PORT ?? file.httpPort ?? 47600),
     httpToken: env.OPENCODE_MCP_TOKEN ?? file.httpToken ?? null,
     maxWaitSeconds: Number(file.maxWaitSeconds ?? 900),
-    // The live page: a loopback port, and whether it opens in the browser by itself when a session starts working.
+    // How a session is shown when it starts working: "terminal" (OpenCode's own window), "browser" or "off".
+    viewer: env.OPENCODE_MCP_VIEWER ?? file.viewer ?? "terminal",
     viewerPort: Number(env.OPENCODE_MCP_VIEWER_PORT ?? file.viewerPort ?? 47601),
-    openViewer: (env.OPENCODE_MCP_OPEN_VIEWER ?? String(file.openViewer ?? "1")) !== "0",
     // Extra Host and Origin values the HTTP transport accepts, for use behind a tunnel or from a browser client.
     allowedHosts: (env.OPENCODE_MCP_ALLOWED_HOSTS?.split(",") ?? file.allowedHosts ?? []).map((h) => h.trim()).filter(Boolean),
     allowedOrigins: (env.OPENCODE_MCP_ALLOWED_ORIGINS?.split(",") ?? file.allowedOrigins ?? []).map((o) => o.trim()).filter(Boolean),

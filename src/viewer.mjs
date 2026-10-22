@@ -17,11 +17,26 @@ function openBrowser(url) {
 }
 
 /**
+ * Opens OpenCode's own terminal UI in a new console window, attached to the private server and to this session, so it
+ * looks as if OpenCode were running normally. The password travels in the child's environment only. Windows only.
+ */
+function openTerminal({ bin, server, info }) {
+  if (process.platform !== "win32" || !bin) return false;
+  try {
+    const args = ["--server", server.url, "-s", info.id, ...(info.location?.directory ? [info.location.directory] : [])];
+    spawn(bin, args, { stdio: "ignore", detached: true, windowsHide: false, env: { ...process.env, OPENCODE_SERVER_PASSWORD: server.password } }).on("error", () => {}).unref();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * A read-only live page for watching a session work. It listens on loopback only, every URL carries a random token
  * that exists only in this process, and a session is shown only if it lives in an authorized directory.
  * Watching costs the assistant nothing: the page talks to this process, not to the model.
  */
-export function createViewer({ hub, client, policy, config }) {
+export function createViewer({ hub, client, policy, config, getServer, getBin }) {
   const token = randomBytes(24).toString("hex");
   let server = null;
   let port = 0;
@@ -117,12 +132,18 @@ export function createViewer({ hub, client, policy, config }) {
       hub.ensure();
       return `http://127.0.0.1:${port}/${token}/s/${sessionId}`;
     },
-    /** Opens the live page once per session, unless the owner turned that off. Always returns the URL. */
+    /**
+     * Shows the session once, as the owner chose (`viewer`: terminal, browser or off). The terminal is OpenCode's own
+     * window; if it cannot be opened the browser page is used instead. Always returns the page URL.
+     */
     async show(sessionId) {
       const url = await this.urlFor(sessionId);
-      if (config.openViewer && !opened.has(sessionId)) {
+      const mode = config.viewer ?? "terminal";
+      if (mode !== "off" && !opened.has(sessionId)) {
         opened.add(sessionId);
-        openBrowser(url);
+        const info = (await client.getSession(sessionId)).data;
+        const terminal = mode === "terminal" && openTerminal({ bin: getBin?.(), server: await getServer(), info });
+        if (!terminal) openBrowser(url);
       }
       return url;
     },
