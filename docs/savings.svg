@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" font-family="system-ui,Segoe UI,sans-serif" font-size="15">
+  <rect width="760" height="300" rx="14" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="30" y="40" font-weight="600" font-size="17" fill="#24292f">Tokens that enter the assistant's context</text>
+  <text x="30" y="62" fill="#57606a" font-size="13">Task: read the 15 source files of this repo (about 53 KB) and explain each one</text>
+  <text x="30" y="125" fill="#24292f">Assistant reads the files itself</text>
+  <rect x="270" y="105" width="440" height="30" rx="5" fill="#cf222e"/>
+  <text x="702" y="126" text-anchor="end" fill="#fff" font-weight="600">≈ 13,000</text>
+  <text x="30" y="185" fill="#24292f">Delegated through opencode-mcp</text>
+  <rect x="270" y="165" width="41" height="30" rx="5" fill="#1a7f37"/>
+  <text x="322" y="186" fill="#1a7f37" font-weight="600">≈ 1,300</text>
+  <text x="30" y="255" fill="#57606a" font-size="13">Estimate: file bytes ÷ 4 for the files; the returned answer was about 1–1.5k tokens. Waiting costs 0 tokens.</text>
+  <text x="30" y="275" fill="#57606a" font-size="13">About 90% less context. Measured end to end: 12 seconds, $0.007 on the OpenCode side.</text>
+</svg>

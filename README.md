@@ -1,12 +1,44 @@
 # opencode-mcp
 
-An MCP server that lets any MCP-capable assistant (Claude Desktop, Claude Code, ChatGPT, Cursor, and others) drive
-**OpenCode** sessions inside project directories you authorize. It has no npm dependencies (Node 20+), and it talks to
-OpenCode only through its own HTTP API (`opencode serve`).
+**Give your AI assistant a cheap helper for the heavy reading, and keep your expensive context for thinking.**
 
-```
-assistant  --MCP (stdio or HTTP)-->  opencode-mcp  --HTTP, loopback, password-->  opencode serve  -->  models
-```
+`opencode-mcp` is a small MCP server that lets Claude, ChatGPT, Cursor, or any MCP client hand work to
+[OpenCode](https://opencode.ai). OpenCode reads the files and runs the commands on a cheap or free model, and your
+assistant gets back only a short answer. Zero npm dependencies (Node 20+), one command to install.
+
+![How it works](docs/architecture.svg)
+
+## Why use it
+
+- **Saves tokens.** Reading a project eats the assistant's context. Delegated, only the short answer enters it. In our
+  test that was about 13,000 tokens of source against about 1,300 tokens of answer (roughly 90% less).
+- **Saves time.** The wait costs nothing. Start several sessions with `wait_seconds: 0`, keep working, then collect each
+  answer with `opencode_result`. Finishing is detected from OpenCode's event stream, so there is no polling loop burning
+  tokens.
+- **Quick to set up.** One command, no config files to write by hand ([Install](#install)).
+- **You can watch.** OpenCode's own terminal window opens on the same session, as if you had started it yourself.
+- **Safe by default.** Only folders you authorize, a private loopback server with a random password, read-only viewer
+  ([Security model](#security-model)).
+
+## Real numbers
+
+Measured on this repo with real OpenCode sessions (not a simulation):
+
+| Task | What the assistant's context got | Time | OpenCode-side cost |
+| --- | --- | --- | --- |
+| Summarize all 15 source files (53 KB) | ≈ 1,300 tokens (the answer) instead of ≈ 13,000 (the files) | ≈ 12 s | ≈ $0.007 |
+| "Understand this large monorepo and summarize it" | a short summary | ≈ 20 s | ≈ $0.005 (24,144 in / 1,328 out tokens) |
+
+![Tokens in the assistant's context](docs/savings.svg)
+
+How to read these honestly:
+
+- The 13,000 figure is an estimate (file bytes ÷ 4), not a tokenizer count. The point is the ratio, not the digit.
+- OpenCode's own token counter adds up every step, including context it resends, so it is larger than the unique text.
+  That cost is paid by the cheap model, not by your assistant's context.
+- Time is not saved because OpenCode is faster than your assistant. It is saved because work runs in parallel while
+  you or the assistant do something else, and because waiting uses no tokens.
+- Tiny tasks (a one-line answer you already know) are not worth delegating. The win grows with the amount of reading.
 
 ## Tools
 
@@ -59,14 +91,30 @@ tokens. If the stream drops, it falls back to polling.
 
 ## Install
 
-```powershell
-cd D:\opencode-mcp
-node bin/opencode-mcp.mjs setup --allow D:\ElZnager-Flow --allow D:\Projects
+You need [Node 20+](https://nodejs.org) and [OpenCode](https://opencode.ai) installed and logged in to a provider.
+
+```bash
+git clone https://github.com/muhamedbeshir/opencode-mcp
+cd opencode-mcp
+node bin/opencode-mcp.mjs install --allow /path/to/your/project
 ```
 
-`setup` writes `%APPDATA%\opencode-mcp\config.json` (keeps existing values, only adds), finds `opencode.exe`, and
-creates an HTTP bearer token once. Run it again to authorize more directories. Without at least one authorized
-directory every project tool refuses to work.
+`install` does everything in one step: writes the settings file, authorizes the folders you pass with `--allow`
+(default: the current folder), and registers the server with every client it finds (Claude Code, Claude Desktop,
+Cursor). Choose clients with `--client claude-code,claude-desktop,cursor`. Then restart the client and ask it to call
+`opencode_status`. Repeat `--allow` for more folders. Without at least one authorized folder every project tool
+refuses to work.
+
+If no client is found it prints the JSON snippet to paste into your client's MCP settings.
+
+### Let your AI agent install it
+
+Tell your agent: *"Install https://github.com/muhamedbeshir/opencode-mcp by following its
+[llms-install.md](llms-install.md)."* The file has exact commands and a checklist the agent can run on its own.
+
+`setup` alone (settings and folders, no client registration) still works:
+`node bin/opencode-mcp.mjs setup --allow <dir>`. It writes `%APPDATA%\opencode-mcp\config.json` (keeps existing values,
+only adds), finds `opencode`, and creates an HTTP bearer token once.
 
 ## Configuration
 

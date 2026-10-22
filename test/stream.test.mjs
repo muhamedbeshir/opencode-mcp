@@ -81,3 +81,25 @@ test("viewer: loopback, secret token in the path, host check, and only authorize
     viewer.stop();
   }
 });
+
+test("install: writes settings, registers Claude Desktop without touching other servers, reports unknown clients", async () => {
+  const { install } = await import("../src/install.mjs");
+  const base = mkdtempSync(join(tmpdir(), "ocmcp-install-"));
+  const appdata = join(base, "Roaming");
+  mkdirSync(join(appdata, "Claude"), { recursive: true });
+  const configFile = join(appdata, "Claude", "claude_desktop_config.json");
+  const { writeFileSync, readFileSync } = await import("node:fs");
+  writeFileSync(configFile, JSON.stringify({ theme: "dark", mcpServers: { other: { command: "x" } } }));
+  const env = { ...process.env, APPDATA: appdata, LOCALAPPDATA: join(base, "none"), OPENCODE_MCP_CONFIG: join(base, "oc", "config.json") };
+  const project = join(base, "proj");
+  mkdirSync(project);
+  const report = install({ allow: [project], clients: ["claude-desktop", "nope"], env });
+  assert.equal(report.results[0].ok, true);
+  assert.equal(report.results[1].ok, false);
+  const written = JSON.parse(readFileSync(configFile, "utf8"));
+  assert.equal(written.theme, "dark");
+  assert.ok(written.mcpServers.other && written.mcpServers.opencode.args[0].endsWith("opencode-mcp.mjs"));
+  const settings = JSON.parse(readFileSync(env.OPENCODE_MCP_CONFIG, "utf8"));
+  assert.equal(settings.allowedDirs.length, 1);
+  assert.ok(settings.httpToken.length >= 24);
+});

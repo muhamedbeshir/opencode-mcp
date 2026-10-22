@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 330" font-family="system-ui,Segoe UI,sans-serif" font-size="15">
+  <rect width="860" height="330" rx="14" fill="#ffffff" stroke="#d0d7de"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#57606a"/></marker></defs>
+  <g stroke="#57606a" stroke-width="2" fill="none" marker-end="url(#a)">
+    <path d="M200 120H280"/><path d="M480 120H560"/><path d="M380 160V210"/><path d="M700 160V210"/>
+  </g>
+  <g>
+    <rect x="30" y="80" width="170" height="80" rx="10" fill="#ddf4ff" stroke="#0969da"/>
+    <text x="115" y="115" text-anchor="middle" font-weight="600" fill="#0a3069">Claude / Cursor /</text>
+    <text x="115" y="137" text-anchor="middle" font-weight="600" fill="#0a3069">any MCP client</text>
+    <rect x="280" y="80" width="200" height="80" rx="10" fill="#dafbe1" stroke="#1a7f37"/>
+    <text x="380" y="113" text-anchor="middle" font-weight="600" fill="#0f5323">opencode-mcp</text>
+    <text x="380" y="137" text-anchor="middle" fill="#0f5323">allowlist · stream · viewer</text>
+    <rect x="560" y="80" width="240" height="80" rx="10" fill="#fff8c5" stroke="#9a6700"/>
+    <text x="680" y="113" text-anchor="middle" font-weight="600" fill="#633c01">opencode serve</text>
+    <text x="680" y="137" text-anchor="middle" fill="#633c01">private · loopback · random password</text>
+    <rect x="280" y="210" width="200" height="80" rx="10" fill="#fbefff" stroke="#8250df"/>
+    <text x="380" y="243" text-anchor="middle" font-weight="600" fill="#4c2889">You watch it live</text>
+    <text x="380" y="267" text-anchor="middle" fill="#4c2889">OpenCode window or web page</text>
+    <rect x="560" y="210" width="240" height="80" rx="10" fill="#f6f8fa" stroke="#57606a"/>
+    <text x="680" y="243" text-anchor="middle" font-weight="600" fill="#24292f">Model providers</text>
+    <text x="680" y="267" text-anchor="middle" fill="#24292f">cheap or free models do the reading</text>
+  </g>
+  <text x="240" y="108" text-anchor="middle" fill="#57606a" font-size="12">1 line in</text>
+  <text x="520" y="108" text-anchor="middle" fill="#57606a" font-size="12">HTTP + events</text>
+  <text x="240" y="150" text-anchor="middle" fill="#57606a" font-size="12">short answer out</text>
+  <text x="430" y="196" fill="#57606a" font-size="12">events</text>
+</svg>
