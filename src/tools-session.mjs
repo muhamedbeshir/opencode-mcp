@@ -46,8 +46,8 @@ export function sessionTools(ctx) {
     {
       name: "opencode_create_session",
       description: "Create a session in an authorized project directory. It runs in the background and can be resumed later, also from the OpenCode terminal with `opencode -s <id>`. Optionally pick a model and send a first instruction.",
-      inputSchema: obj({ directory: str("Absolute project directory"), title: str("Session title"), model: str("provider/model or provider/model#variant, see opencode_list_models"), agent: str("Agent id, see opencode_list_agents"), prompt: str("First instruction to send"), wait_seconds: WAIT }, ["directory"]),
-      async handler({ directory, title, model, agent, prompt, wait_seconds }) {
+      inputSchema: obj({ directory: str("Absolute project directory. Omit it to use the folder this server was started in (normally the folder the chat is working in), if that folder is authorized."), title: str("Session title"), model: str("provider/model or provider/model#variant, see opencode_list_models"), agent: str("Agent id, see opencode_list_agents"), prompt: str("First instruction to send"), wait_seconds: WAIT }),
+      async handler({ directory = process.cwd(), title, model, agent, prompt, wait_seconds }) {
         policy.assert(directory);
         const body = { location: { directory }, ...(title ? { title } : {}), ...(model ? { model: parseModel(model) } : {}), ...(agent ? { agent } : {}) };
         const info = (await client.createSession(body)).data;
