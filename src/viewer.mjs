@@ -24,7 +24,9 @@ function openTerminal({ bin, server, info }) {
   if (process.platform !== "win32" || !bin) return false;
   try {
     const args = ["--server", server.url, "-s", info.id, ...(info.location?.directory ? [info.location.directory] : [])];
-    spawn(bin, args, { stdio: "ignore", detached: true, windowsHide: false, env: { ...process.env, OPENCODE_SERVER_PASSWORD: server.password } }).on("error", () => {}).unref();
+    // This process usually has no visible console (it is started by the chat app), so a plain spawn gives OpenCode a
+    // hidden one. `start` always creates a new visible console window.
+    spawn("cmd.exe", ["/d", "/c", "start", "OpenCode live", bin, ...args], { stdio: "ignore", detached: true, windowsHide: true, env: { ...process.env, OPENCODE_SERVER_PASSWORD: server.password } }).on("error", () => {}).unref();
     return true;
   } catch {
     return false;
